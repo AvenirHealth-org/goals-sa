@@ -16,7 +16,7 @@
 ### Prerequisites
 
 * [uv](https://docs.astral.sh/uv/) for installing Python, package management
-* (Optionally) [make](https://www.gnu.org/software/make/). Should be installed by default except on windows where proabably easiest to install it via [Chocolatey](https://chocolatey.org/install) `choco install make`
+* (Optionally) [make](https://www.gnu.org/software/make/). Should be installed by default, except on windows, where it is easiest to install it via [Chocolatey](https://chocolatey.org/install) `choco install make`
 
 ### Development with make
 
@@ -54,7 +54,7 @@ make docs
 
 If you choose not to use make, you can use `uv` directly.
 
-### Set Up Your Development Environment
+#### Set Up Your Development Environment
 
 Install the environment and the pre-commit hooks with
 
@@ -65,7 +65,7 @@ uv run pre-commit install
 
 This will also generate your `uv.lock` file.
 
-### Run code checks
+#### Run code checks
 
 Run pre-commit checks, include ruff linting and formatting
 
@@ -79,14 +79,24 @@ Run type checking
 uv run ty check
 ```
 
-### Run tests
+#### Run tests
 
 ```bash
 uv run pytest
 ```
 
-### Build docs site
+#### Build docs site
 
 ```bash
 uv run mkdocs serve
 ```
+
+#### Run compatibility tests
+
+Compatability tests with tox are configured. Run them with
+
+```bash
+uv run tox
+```
+
+These are also run on CI, so not the end of the world if you don't do it locally.
