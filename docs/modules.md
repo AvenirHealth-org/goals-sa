@@ -1,0 +1,1 @@
+::: goals_sa.foo
