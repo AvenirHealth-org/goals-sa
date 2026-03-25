@@ -27,7 +27,7 @@ jobs:
 
   tests-and-type-check:
     runs-on: ${{ matrix.config.os }}
-    name: ${{matrix.config.os }} (${{ matrix.config.py }})
+    name: Test and type check ${{matrix.config.os }} (${{ matrix.config.py }})
     strategy:
       matrix:
         config:

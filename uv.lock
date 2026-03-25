@@ -340,7 +340,7 @@ wheels = [
 [[package]]
 name = "goals-sa"
 version = "0.0.1"
-source = { virtual = "." }
+source = { editable = "." }
 
 [package.dev-dependencies]
 dev = [
