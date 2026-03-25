@@ -24,7 +24,7 @@ Repository = "https://github.com/avenirhealth-org/goals-sa"
 Documentation = "https://avenirhealth-org.github.io/goals-sa/"
 
 [build-system]
-requires = ["uv_build>=0.6,<0.7"]
+requires = ["uv_build>=0.11.1,<0.12"]
 build-backend = "uv_build"
 
 [dependency-groups]
