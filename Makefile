@@ -36,6 +36,10 @@ docs-test: ## Test if documentation can be built without warnings or errors
 docs: ## Build and serve the documentation
 	@uv run mkdocs serve
 
+.PHONY: pjnz-import-code
+pjnz-import-code: ## Run the script to update vendored PJNZ import code
+	@uv run ./scripts/update_pjnz_import_code.py
+
 .PHONY: help
 help:
 	@uv run python -c "import re; \

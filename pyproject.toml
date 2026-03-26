@@ -29,6 +29,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "gitpython>=3.1",
     "pytest>=9.0.2",
     "pre-commit>=4.5.1",
     "tox-uv>=1.33.4",
@@ -45,6 +46,9 @@ dev = [
 python = "./.venv"
 python-version = "3.10"
 
+[tool.ty.src]
+exclude = ["src/const", "src/import"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
@@ -52,6 +56,11 @@ testpaths = ["tests"]
 target-version = "py310"
 line-length = 120
 fix = true
+# Exclude vendored SpectrumEngine directories
+exclude = [
+    "src/const",
+    "src/import"
+]
 
 [tool.ruff.lint]
 select = [
@@ -95,6 +104,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
+"scripts/*" = ["S607"]
 
 [tool.ruff.format]
 preview = true

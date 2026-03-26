@@ -161,7 +161,7 @@ def _read_rn_year_row(sheet, row, calc_year_idx, final_index,
     values = [0.0] * (final_index + 1)
     col = start_col
     last_value = 0.0
-    # print(sheet.values[row, col:])
+    print(sheet.values[row, col:])
     for t in range(calc_year_idx, final_index + 1):
         cell_value = sheet.values[row, col]
         if cell_value != '':
