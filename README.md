@@ -100,3 +100,18 @@ uv run tox
 ```
 
 These are also run on CI, so not the end of the world if you don't do it locally.
+
+## Vendored SpectrumEngine import code
+
+We need to re-use some of the PJNZ import code from SpectrumEngine. At the moment, this is vendored here directly. There is a script to update the vendored code which should be run before a release. The script uses a file `./scripts/spectrum_engine_ref` to clone the specified branch or ref.
+
+With make:
+
+```bash
+make pjnz-import-code
+```
+
+Run script directly
+```bash
+uv run ./scripts/update_pjnz_import_code.py
+```
