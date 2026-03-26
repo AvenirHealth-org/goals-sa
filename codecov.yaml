@@ -8,5 +8,5 @@ coverage:
         target: 90%
         threshold: 0.5%
   ignore:
-    - "src/const"
-    - "src/import"
+    - "src/goals_sa/_const"
+    - "src/goals_sa/_import"
