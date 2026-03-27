@@ -8,6 +8,6 @@ coverage:
         target: 90%
         threshold: 0.5%
   ignore:
-    - "src/goals_sa/_const"
-    - "src/goals_sa/_import"
-    - "src/goals_sa/_leapfrog"
+    - "src/avenir_goals_sa/_const"
+    - "src/avenir_goals_sa/_import"
+    - "src/avenir_goals_sa/_leapfrog"

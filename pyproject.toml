@@ -1,5 +1,5 @@
 [project]
-name = "goals-sa"
+name = "avenir-goals-sa"
 version = "0.0.1"
 description = "Goals scenario analysis"
 authors = [{ name = "Rob Ashton", email = "rashton@avenirhealth.org" }]
@@ -24,7 +24,7 @@ classifiers = [
 ]
 
 [project.scripts]
-goals-sa = "goals_sa.cli:main"
+goals-sa = "avenir_goals_sa.cli:main"
 
 [project.urls]
 Homepage = "https://avenirhealth-org.github.io/goals-sa/"
@@ -56,9 +56,9 @@ python-version = "3.10"
 
 [tool.ty.src]
 exclude = [
-    "src/goals_sa/_const",
-    "src/goals_sa/_import",
-    "src/goals_sa/_leapfrog"
+    "src/avenir_goals_sa/_const",
+    "src/avenir_goals_sa/_import",
+    "src/avenir_goals_sa/_leapfrog"
 ]
 
 [tool.pytest.ini_options]
@@ -70,9 +70,9 @@ line-length = 120
 fix = true
 # Exclude vendored SpectrumEngine directories
 exclude = [
-    "src/goals_sa/_const",
-    "src/goals_sa/_import",
-    "src/goals_sa/_leapfrog"
+    "src/avenir_goals_sa/_const",
+    "src/avenir_goals_sa/_import",
+    "src/avenir_goals_sa/_leapfrog"
 ]
 
 [tool.ruff.lint]

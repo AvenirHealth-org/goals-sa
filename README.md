@@ -14,7 +14,7 @@
 ## Installation
 
 ```bash
-pip install goals-sa
+pip install avenir_goals_sa
 ```
 
 After installation, the `goals-sa` command is available on your PATH.
