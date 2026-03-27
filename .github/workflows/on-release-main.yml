@@ -5,38 +5,7 @@ on:
     types: [published]
 
 jobs:
-
-  set-version:
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          ref: ${{ github.head_ref }}
-
-      - name: Export tag
-        id: vars
-        run: echo tag=${GITHUB_REF#refs/*/} >> $GITHUB_OUTPUT
-
-      - name: Update project version
-        run: |
-          VERSION="${RELEASE_VERSION#v}"
-          CURRENT=$(grep -P '^version = ' pyproject.toml | sed 's/version = "//;s/"//')
-          if [ "$CURRENT" != "$VERSION" ]; then
-            sed -i "s/^version = \".*\"/version = \"$VERSION\"/" pyproject.toml
-          fi
-        env:
-          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
-
-      - uses: stefanzweifel/git-auto-commit-action@v7
-        with:
-          commit_message: "chore: bump version to ${{ steps.vars.outputs.tag }}"
-          branch: main
-
   build_wheels:
-    needs: [set-version]
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -65,7 +34,6 @@ jobs:
           path: wheelhouse/*.whl
 
   build_sdist:
-    needs: [set-version]
     name: Build source distribution
     runs-on: ubuntu-latest
 
