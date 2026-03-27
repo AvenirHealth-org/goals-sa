@@ -12,6 +12,9 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
 
       - name: Export tag
         id: vars
@@ -21,18 +24,16 @@ jobs:
         run: |
           VERSION="${RELEASE_VERSION#v}"
           CURRENT=$(grep -P '^version = ' pyproject.toml | sed 's/version = "//;s/"//')
-          if [ "$CURRENT" = "$VERSION" ]; then
-            echo "Version already set to $VERSION, skipping commit."
-          else
+          if [ "$CURRENT" != "$VERSION" ]; then
             sed -i "s/^version = \".*\"/version = \"$VERSION\"/" pyproject.toml
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add pyproject.toml
-            git commit -m "chore: bump version to $VERSION"
-            git push
           fi
         env:
           RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+
+      - uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "chore: bump version to ${{ steps.vars.outputs.tag }}"
+          branch: main
 
   build_wheels:
     needs: [set-version]
