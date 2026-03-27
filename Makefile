@@ -12,6 +12,8 @@ check: ## Run code quality tools.
 	@uv run pre-commit run -a
 	@echo "🚀 Static type checking: Running ty"
 	@uv run ty check
+	@echo "🚀 Vulnerability check: Running pip-audit"
+	@uv run pip-audit --desc -s osv --ignore-vuln CVE-2026-4539
 
 .PHONY: test
 test: ## Test the code with pytest
