@@ -5,7 +5,7 @@ The `goals-sa` CLI provides two commands.
 ## Installation
 
 ```bash
-pip install goals-sa
+pip install avenir_goals_sa
 ```
 
 After installation, `goals-sa` is available on your PATH.

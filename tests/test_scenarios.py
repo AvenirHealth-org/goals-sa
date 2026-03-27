@@ -1,6 +1,6 @@
 import pytest
 
-from goals_sa.scenarios import generate_scenarios
+from avenir_goals_sa.scenarios import generate_scenarios
 
 
 def test_generate_scenarios_runs(tmp_path):
