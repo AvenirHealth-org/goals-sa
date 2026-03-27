@@ -63,6 +63,9 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+      - name: Check vulnerabilities
+        run: uv run pip-audit -s osv --desc
+
   check-docs:
     runs-on: ubuntu-latest
     steps:
