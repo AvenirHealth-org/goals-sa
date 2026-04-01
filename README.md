@@ -151,6 +151,12 @@ Run type checking
 uv run ty check
 ```
 
+Check for vulnerabilities in pypi dependencies
+
+```bash
+uv run pip-audit --desc -s osv
+```
+
 #### Run tests
 
 ```bash
