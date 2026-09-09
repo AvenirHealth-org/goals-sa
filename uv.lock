@@ -61,7 +61,7 @@ wheels = [
 
 [[package]]
 name = "avenir-goals-scenario"
-version = "0.0.26"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "avenir-spectrum-common" },
