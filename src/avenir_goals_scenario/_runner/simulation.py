@@ -91,6 +91,11 @@ _PREP_IDS = frozenset(_product_to_id(p) for p in get_args(PrepProduct))
 # Derived from LongActingProduct so the two stay in sync automatically.
 _LAT_IDS = frozenset(_product_to_id(p) for p in get_args(LongActingProduct))
 
+# Row index into the leapfrog child model's ``pbfw_prep_clients`` for the
+# injectable regimen (leapfrog enum ``PBFW_PREP_INJECTABLE``; ``PBFW_PREP_DAILY_ORAL``
+# is row 0 and is left untouched).
+_PBFW_PREP_INJECTABLE = 1
+
 
 # VMM coverage-type flags (leapfrog enum, not exported from SpectrumCommon). Note the
 # naming is inverted relative to cure/vaccine's RN_Single/RN_Diff: ALLRISK uses the
@@ -232,6 +237,13 @@ class _CoverageOnlyDraw(TypedDict):
     target_coverage: float
 
 
+class _PbfwPrepDraw(TypedDict):
+    target_year: int
+    target_coverage: float | list[float]
+    adherence: float
+    client_incidence_ratio: float
+
+
 class _POCTestDraw(TypedDict):
     target_year: int
     target_coverage: float
@@ -268,6 +280,7 @@ _Draw: TypeAlias = (
     | _POCTestDraw
     | _AdultARTDraw
     | _LongActingTreatmentDraw
+    | _PbfwPrepDraw
     | _ARTViralSuppressionDraw
 )
 
@@ -627,6 +640,34 @@ def _apply_coverage_only(lp: LeapfrogParams, intervention_id: str, draw: _Covera
     _ramp_to_target(series, base_idx, target_idx, draw["target_coverage"])
 
 
+def _apply_pbfw_prep(lp: LeapfrogParams, draw: _PbfwPrepDraw, base_year: int) -> None:
+    """Apply injectable PrEP for pregnant and breastfeeding women.
+
+    ``target_coverage`` is the share of HIV-negative pregnant/breastfeeding women
+    on injectable PrEP. It is written into the injectable row of the child
+    model's ``pbfw_prep_clients`` and ``pbfw_prep_is_percent`` is set so the model
+    reads it as a ratio (used directly as a multiplier) rather than a client
+    count. ``adherence`` and ``client_incidence_ratio`` are run-wide scalars;
+    person-years of PrEP per client keeps its imported PJNZ value. The daily-oral
+    regimen row and its scalars are left untouched.
+    """
+    base_idx = _base_year_idx(lp, base_year)
+    target_idx = _maybe_target_year_idx(lp, draw)
+    # The imported base-year value is a client count, not a coverage, so ramp
+    # from 0 rather than from the existing value. A per-year array is written
+    # verbatim by _ramp_to_target.
+    _ramp_to_target(
+        lp["pbfw_prep_clients"][_PBFW_PREP_INJECTABLE],
+        base_idx,
+        target_idx,
+        draw["target_coverage"],
+        base_value=0.0,
+    )
+    lp["pbfw_prep_is_percent"][base_idx:] = 1
+    lp["pbfw_prep_adherence_injectable"] = draw["adherence"]
+    lp["pbfw_prep_client_incidence_ratio"] = draw["client_incidence_ratio"]
+
+
 def _apply_adult_art(lp: LeapfrogParams, draw: _AdultARTDraw, base_year: int) -> None:
     base_idx = _base_year_idx(lp, base_year)
     target_idx = _maybe_target_year_idx(lp, draw)
@@ -740,6 +781,8 @@ def _dispatch(lp: LeapfrogParams, iv: InterventionOut, draw: dict, base_year: in
         case "poc_vl_test" | "poc_cd4_test":
             poc_type = RN_POC_CD4_Int if iv.id == "poc_cd4_test" else RN_POC_VL_Int
             _apply_poc(lp, poc_type, cast(_POCTestDraw, draw), base_year)
+        case "long_acting_prep_for_pregnant_and_breastfeeding_women":
+            _apply_pbfw_prep(lp, cast(_PbfwPrepDraw, draw), base_year)
         case "adult_art":
             _apply_adult_art(lp, cast(_AdultARTDraw, draw), base_year)
         case "art_viral_suppression":

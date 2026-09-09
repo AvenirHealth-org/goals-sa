@@ -586,6 +586,27 @@
           }
         },
         {
+          "product": "Long-acting PrEP for pregnant and breastfeeding women",
+          "parameters": {
+            "target_year": {
+              "mean": 2030,
+              "sd": 0.0
+            },
+            "target_coverage": {
+              "mean": 0.4,
+              "sd": 0.0
+            },
+            "adherence": {
+              "mean": 0.9,
+              "sd": 0.0
+            },
+            "client_incidence_ratio": {
+              "mean": 1.0,
+              "sd": 0.0
+            }
+          }
+        },
+        {
           "product": "Adult ART",
           "targets": [
             {

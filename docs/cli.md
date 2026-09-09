@@ -249,7 +249,8 @@ microbiome modification, Adult ART) also have a `targets` list, and for those pr
 its own coverage. The target-less products (Therapeutic vaccine, AHD treatment, POC
 tests, Long-acting treatment, VMMC, FSW outreach, MSM outreach, ART interruption) have
 no `targets` list, so `target_coverage` lives directly in `parameters` instead, since
-there is only one population to specify coverage for. ART viral suppression is also
+there is only one population to specify coverage for. Long-acting PrEP for pregnant
+and breastfeeding women is likewise target-less. ART viral suppression is also
 target-less, but names its coverage-like input `viral_load_suppression` rather than
 `target_coverage`.
 
@@ -770,6 +771,40 @@ number for the whole run, not a per-year series.
     "target_coverage":               {"mean": 0.30, "sd": 0.05},
     "interruption_rate_reduction":   {"mean": 0.20, "sd": 0.05},
     "viral_load_suppression_ratio":  {"mean": 0.75, "sd": 0.05}
+  }
+}
+```
+
+---
+
+##### Long-acting PrEP for pregnant and breastfeeding women
+
+`product`: `"Long-acting PrEP for pregnant and breastfeeding women"`
+
+No `targets` field — there is a single population (pregnant and breastfeeding
+women). Drives the injectable-regimen inputs of the Goals child (PMTCT) model,
+which reduces maternal HIV incidence. The daily-oral regimen is not touched.
+
+`parameters`:
+
+| Parameter | Description |
+|---|---|
+| `target_year` | Target implementation year. Ignored if `target_coverage` is passed as an array — see [per-year coverage arrays](#per-year-coverage-arrays) |
+| `target_coverage` | Share (0–1) of HIV-negative pregnant/breastfeeding women on injectable PrEP. Distribution (`mean` & `sd`) or an array of per-year values — see [per-year coverage arrays](#per-year-coverage-arrays). Passed to the model as a ratio (used directly as a multiplier), not a client count |
+| `adherence` | Distribution for adherence (proportion, 0–1) |
+| `client_incidence_ratio` | Distribution for the ratio of HIV incidence among PrEP clients to that among all pregnant/breastfeeding women (proportion, 0–1) |
+
+Person-years of PrEP per client is not settable here — it keeps the value from
+the PJNZ (or the Spectrum default).
+
+```json
+{
+  "product": "Long-acting PrEP for pregnant and breastfeeding women",
+  "parameters": {
+    "target_year":            {"mean": 2030, "sd": 2},
+    "target_coverage":        {"mean": 0.40, "sd": 0.05},
+    "adherence":              {"mean": 0.90, "sd": 0.03},
+    "client_incidence_ratio": {"mean": 1.0,  "sd": 0.0}
   }
 }
 ```

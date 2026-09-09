@@ -670,6 +670,31 @@ def test_vmm_sampling_round_trip():
     assert all(c.sex is None for c in coverages)
 
 
+def test_pbfw_prep_sampling_round_trip():
+    definition = ScenarioInput.model_validate({
+        "scenarios": [
+            {
+                "id": "1",
+                "interventions": [
+                    {
+                        "product": "Long-acting PrEP for pregnant and breastfeeding women",
+                        "parameters": {
+                            "target_year": {"mean": 2030, "sd": 2},
+                            "target_coverage": {"mean": 0.4, "sd": 0.05},
+                            "adherence": {"mean": 0.9, "sd": 0.03},
+                            "client_incidence_ratio": {"mean": 1.0, "sd": 0.0},
+                        },
+                    }
+                ],
+            }
+        ]
+    })
+    output = gen_simulations(definition, n_simulations=1, rng=_seeded_rng())
+    params = output.scenarios[0].simulations[0]["long_acting_prep_for_pregnant_and_breastfeeding_women"].root
+    assert set(params.keys()) == {"target_year", "target_coverage", "adherence", "client_incidence_ratio"}
+    assert isinstance(params["target_coverage"], float)
+
+
 def test_art_viral_suppression_distribution_sampling_round_trip():
     definition = ScenarioInput.model_validate({
         "scenarios": [
