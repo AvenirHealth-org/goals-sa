@@ -18,6 +18,8 @@ from avenir_goals_scenario.models.scenario_definition import (
     LongActingTreatmentDef,
     LongActingTreatmentParameters,
     NormalDistParameters,
+    PbfwPrepInterventionDef,
+    PbfwPrepParameters,
     POCTestParameters,
     PrepInterventionDef,
     PrepParameters,
@@ -456,6 +458,78 @@ def test_poc_test_parameters_applies_constraints():
     assert params.target_coverage.max_value == 1.0
     assert params.effect.min_value == 0.0
     assert params.effect.max_value == 1.0
+
+
+# ---------------------------------------------------------------------------
+# PbfwPrepParameters / PbfwPrepInterventionDef
+# ---------------------------------------------------------------------------
+
+_PBFW_PREP_PARAMS = {
+    "target_year": {"mean": 2030, "sd": 2},
+    "target_coverage": {"mean": 0.4, "sd": 0.05},
+    "adherence": {"mean": 0.9, "sd": 0.03},
+    "client_incidence_ratio": {"mean": 1.0, "sd": 0.0},
+}
+
+
+def test_pbfw_prep_parameters_applies_defaults():
+    params = PbfwPrepParameters.model_validate(_PBFW_PREP_PARAMS)
+    assert params.target_year is not None
+    assert params.target_year.integer is True
+    assert params.target_year.min_value == 1970
+    assert isinstance(params.target_coverage, NormalDistParameters)
+    assert params.target_coverage.min_value == 0.0
+    assert params.target_coverage.max_value == 1.0
+    assert params.adherence.min_value == 0.0
+    assert params.adherence.max_value == 1.0
+    assert params.client_incidence_ratio.min_value == 0.0
+    assert params.client_incidence_ratio.max_value == 1.0
+
+
+def test_pbfw_prep_def_accepts_valid_product():
+    iv = PbfwPrepInterventionDef.model_validate({
+        "product": "Long-acting PrEP for pregnant and breastfeeding women",
+        "parameters": _PBFW_PREP_PARAMS,
+    })
+    assert iv.product == "Long-acting PrEP for pregnant and breastfeeding women"
+
+
+def test_pbfw_prep_def_rejects_unknown_key():
+    with pytest.raises(ValidationError):
+        PbfwPrepInterventionDef.model_validate({
+            "product": "Long-acting PrEP for pregnant and breastfeeding women",
+            "parameters": {**_PBFW_PREP_PARAMS, "person_years": {"mean": 0.85, "sd": 0.0}},
+        })
+
+
+def test_pbfw_prep_distribution_without_target_year_rejected():
+    with pytest.raises(ValidationError, match="target_year' is required"):
+        SingleScenarioDef.model_validate({
+            "id": "s1",
+            "interventions": [
+                {
+                    "product": "Long-acting PrEP for pregnant and breastfeeding women",
+                    "parameters": {k: v for k, v in _PBFW_PREP_PARAMS.items() if k != "target_year"},
+                }
+            ],
+        })
+
+
+def test_pbfw_prep_per_year_array_needs_no_target_year():
+    scenario = SingleScenarioDef.model_validate({
+        "id": "s1",
+        "interventions": [
+            {
+                "product": "Long-acting PrEP for pregnant and breastfeeding women",
+                "parameters": {
+                    "target_coverage": [0.1, 0.2, 0.3],
+                    "adherence": {"mean": 0.9, "sd": 0.0},
+                    "client_incidence_ratio": {"mean": 1.0, "sd": 0.0},
+                },
+            }
+        ],
+    })
+    assert len(scenario.interventions) == 1
 
 
 # ---------------------------------------------------------------------------

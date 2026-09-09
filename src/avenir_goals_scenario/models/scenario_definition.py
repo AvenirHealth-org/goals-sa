@@ -447,6 +447,32 @@ class LongActingTreatmentParameters(BaseModel):
         return self
 
 
+class PbfwPrepParameters(BaseModel):
+    """Parameters for injectable PrEP among pregnant and breastfeeding women.
+
+    ``target_coverage`` is the share of HIV-negative pregnant/breastfeeding women
+    on injectable PrEP; it is passed to the Goals child model directly (as a
+    ratio, not a client count). ``client_incidence_ratio`` is the ratio of HIV
+    incidence among PrEP clients to that among all pregnant/breastfeeding women.
+    Person-years of PrEP per client keeps its imported PJNZ value.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    target_year: NormalDistParameters | None = None
+    target_coverage: CoverageValue
+    adherence: NormalDistParameters
+    client_incidence_ratio: NormalDistParameters
+
+    @model_validator(mode="after")
+    def _apply_constraints(self) -> Self:
+        self.target_year = _apply_year_constraint(self.target_year)
+        self.target_coverage = _apply_coverage_defaults(self.target_coverage)
+        self.adherence = _apply_proportion_defaults(self.adherence)
+        self.client_incidence_ratio = _apply_proportion_defaults(self.client_incidence_ratio)
+        return self
+
+
 class AdultARTParameters(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -526,6 +552,8 @@ LongActingProduct = Literal[
     "Long-acting treatment (Injectable 6 month)",
     "Long-acting treatment (Implant)",
 ]
+
+PbfwPrepProduct = Literal["Long-acting PrEP for pregnant and breastfeeding women"]
 
 
 class PrepInterventionDef(BaseModel):
@@ -631,6 +659,16 @@ class LongActingTreatmentDef(BaseModel):
     parameters: LongActingTreatmentParameters
 
 
+class PbfwPrepInterventionDef(BaseModel):
+    """Injectable PrEP among pregnant and breastfeeding women. Target-less: there is a
+    single population, so coverage lives in ``parameters.target_coverage``."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    product: PbfwPrepProduct
+    parameters: PbfwPrepParameters
+
+
 class AdultARTInterventionDef(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -689,6 +727,7 @@ AnyInterventionDef = Annotated[
     | POCViralLoadTestDef
     | POCCD4TestDef
     | LongActingTreatmentDef
+    | PbfwPrepInterventionDef
     | AdultARTInterventionDef
     | VMMCInterventionDef
     | FSWOutreachInterventionDef

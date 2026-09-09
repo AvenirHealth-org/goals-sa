@@ -145,6 +145,20 @@ def _lat_params() -> dict:
     }
 
 
+def _pbfw_prep_params() -> dict:
+    return {
+        "projection_start_year": _START_YEAR,
+        # pbfw_prep_clients: (pbfw_prep_regimen=2, n_years) — [daily_oral=0, injectable=1]
+        "pbfw_prep_clients": np.zeros((2, _N_YEARS)),
+        "pbfw_prep_is_percent": np.zeros(_N_YEARS, dtype=int),
+        "pbfw_prep_adherence_injectable": 0.0,
+        "pbfw_prep_client_incidence_ratio": 0.0,
+        # left untouched by the intervention
+        "pbfw_prep_adherence_daily_oral": 0.11,
+        "pbfw_prep_person_years_injectable": 0.85,
+    }
+
+
 def _rn_coverage_params() -> dict:
     return {
         "projection_start_year": _START_YEAR,
@@ -1052,6 +1066,69 @@ def test_long_acting_treatment_multi_product_clamps_cov_to_1():
     # blend weights use each product's own (unclamped) steady-state coverage, not the clamped total
     assert lp["long_act_treat_eff_vls"] == pytest.approx((0.7 * 0.75 + 0.5 * 0.90) / 1.2)
     assert lp["long_act_treat_eff_ltfu"] == pytest.approx((0.7 * 0.20 + 0.5 * 0.35) / 1.2)
+
+
+# ---------------------------------------------------------------------------
+# Long-acting PrEP for pregnant and breastfeeding women
+# ---------------------------------------------------------------------------
+
+_PBFW_PREP_ID = "long_acting_prep_for_pregnant_and_breastfeeding_women"
+_PBFW_PREP_PRODUCT = "Long-acting PrEP for pregnant and breastfeeding women"
+_PBFW_INJECTABLE_ROW = 1
+
+
+def test_pbfw_prep_writes_coverage_flag_and_scalars():
+    lp = _pbfw_prep_params()
+    ivs = _iv(_PBFW_PREP_ID, _PBFW_PREP_PRODUCT)
+    sim = _sim(_PBFW_PREP_ID, target_coverage=0.4, adherence=0.9, client_incidence_ratio=1.0)
+
+    apply_simulation(lp, ivs, sim, _START_YEAR)
+
+    clients = lp["pbfw_prep_clients"]
+    # injectable row ramps 0 -> target over base_year..target_year, then holds
+    np.testing.assert_allclose(
+        clients[_PBFW_INJECTABLE_ROW, : _TARGET_YEAR_IDX + 1], [0.0, 0.08, 0.16, 0.24, 0.32, 0.4]
+    )
+    np.testing.assert_allclose(clients[_PBFW_INJECTABLE_ROW, _TARGET_YEAR_IDX:], 0.4)
+    # daily-oral row untouched
+    np.testing.assert_array_equal(clients[0], 0.0)
+    # flagged as a coverage ratio for every projected year
+    np.testing.assert_array_equal(lp["pbfw_prep_is_percent"], 1)
+    assert lp["pbfw_prep_adherence_injectable"] == pytest.approx(0.9)
+    assert lp["pbfw_prep_client_incidence_ratio"] == pytest.approx(1.0)
+    # person-years and daily-oral adherence left as imported
+    assert lp["pbfw_prep_person_years_injectable"] == pytest.approx(0.85)
+    assert lp["pbfw_prep_adherence_daily_oral"] == pytest.approx(0.11)
+
+
+def test_pbfw_prep_only_flags_from_base_year():
+    lp = _pbfw_prep_params()
+    ivs = _iv(_PBFW_PREP_ID, _PBFW_PREP_PRODUCT)
+    sim = _sim(_PBFW_PREP_ID, target_coverage=0.5, adherence=0.9, client_incidence_ratio=1.0)
+
+    apply_simulation(lp, ivs, sim, _BASE_YEAR)
+
+    assert lp["pbfw_prep_is_percent"][_BASE_YEAR_IDX - 1] == 0
+    np.testing.assert_array_equal(lp["pbfw_prep_is_percent"][_BASE_YEAR_IDX:], 1)
+    assert lp["pbfw_prep_clients"][_PBFW_INJECTABLE_ROW, _BASE_YEAR_IDX - 1] == 0.0
+
+
+def test_pbfw_prep_accepts_per_year_coverage_array():
+    lp = _pbfw_prep_params()
+    ivs = _iv(_PBFW_PREP_ID, _PBFW_PREP_PRODUCT)
+    coverage = [0.05 * i for i in range(_N_YEARS)]
+    sim = {
+        _PBFW_PREP_ID: InterventionSimulation({
+            "target_coverage": coverage,
+            "adherence": 0.8,
+            "client_incidence_ratio": 0.9,
+        })
+    }
+
+    apply_simulation(lp, ivs, sim, _START_YEAR)
+
+    np.testing.assert_allclose(lp["pbfw_prep_clients"][_PBFW_INJECTABLE_ROW], coverage)
+    assert lp["pbfw_prep_adherence_injectable"] == pytest.approx(0.8)
 
 
 def test_prep_coverage_interpolates_and_mix_constant_for_single_product():
